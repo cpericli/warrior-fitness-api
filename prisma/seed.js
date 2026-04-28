@@ -3,11 +3,7 @@ import prisma from '../src/config/db.js';
 
 async function main() {
   // clear existing data 
-  await prisma.progressEntry.deleteMany();
-  await prisma.planWorkout.deleteMany();
-  await prisma.workoutPlan.deleteMany();
-  await prisma.workout.deleteMany();
-  await prisma.user.deleteMany();
+  await prisma.$queryRaw`TRUNCATE progressEntry, planWorkout, workoutPlan, workout, user RESTART IDENTITY CASCADE;
 
   const hashedPassword = await bcrypt.hash('password123', 10);
 
