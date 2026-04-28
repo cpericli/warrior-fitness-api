@@ -2,6 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 
+import swaggerUi from 'swagger-ui-express';
+import yaml from 'js-yaml';
+import fs from 'fs';
+
 import authRoutes from './routes/authRoutes.js';
 import workoutRoutes from './routes/workoutRoutes.js';
 import planRoutes from './routes/planRoutes.js';
@@ -12,6 +16,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
+
+const openapiSpec = yaml.load(fs.readFileSync('./docs/openapi.yaml', 'utf8'));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpec));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/workouts', workoutRoutes);
