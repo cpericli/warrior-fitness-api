@@ -86,6 +86,27 @@ async function main() {
     },
   });
 
+  await prisma.workoutPlan.create({
+  data: {
+    title: 'Cadet Advanced Plan',
+    goal: 'Improve endurance and strength',
+    duration_weeks: 6,
+    user_id: cadet.id,
+    planWorkouts: {
+      create: [
+        {
+          workout_id: allWorkouts[2].id, // Long Distance Run
+          day_number: 1,
+        },
+        {
+          workout_id: allWorkouts[3].id, // HIIT Workout
+          day_number: 2,
+        },
+      ],
+    },
+  },
+});
+
   // create admin plan (for ownership testing)
   await prisma.workoutPlan.create({
     data: {
@@ -118,6 +139,15 @@ async function main() {
       notes: 'Felt stronger than last week',
     },
   });
+
+  await prisma.progressEntry.create({
+  data: {
+    user_id: cadet.id,
+    workout_id: allWorkouts[3].id, // HIIT Workout
+    date_completed: new Date('2026-04-05'),
+    notes: 'Challenging but completed successfully',
+  },
+});
 
   // create admin progress entry 
   await prisma.progressEntry.create({
