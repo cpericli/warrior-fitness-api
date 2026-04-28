@@ -106,6 +106,26 @@ async function main() {
   });
 
 
+  // create cadet progress entry
+  await prisma.progressEntry.create({
+    data: {
+      user_id: cadet.id,
+      workout_id: allWorkouts[0].id,
+      date_completed: new Date('2026-03-31'),
+      notes: 'Felt stronger than last week',
+    },
+  });
+
+  // create admin progress entry 
+  await prisma.progressEntry.create({
+    data: {
+      user_id: admin.id,
+      workout_id: allWorkouts[1].id,
+      date_completed: new Date('2026-04-01'),
+      notes: 'Completed workout with good form',
+    },
+  });
+
   console.log('Database seeded');
 }
 
