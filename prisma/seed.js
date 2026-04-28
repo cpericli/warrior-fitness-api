@@ -51,6 +51,13 @@ async function main() {
         difficulty: 'Advanced',
         duration_minutes: 45,
       },
+      {
+        title: 'HIIT Workout',
+        description: 'High Interval Training with calisthenics',
+        category: 'Cardio',
+        difficulty: 'Advanced',
+        duration_minutes: 30,
+      },
     ],
   });
 
