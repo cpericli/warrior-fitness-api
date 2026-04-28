@@ -1,0 +1,1125 @@
+openapi: 3.0.3
+
+info:
+  title: Warrior Fitness API
+  version: 1.0.0
+  description: API documentation for the Warrior Fitness API
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+  - url: https://your-render-url.onrender.com/api
+    description: Production server
+
+tags:
+  - name: Auth
+    description: User authentication endpoints
+  - name: Workouts
+    description: Workout-related endpoints
+  - name: Plans
+    description: Workout plan endpoints
+  - name: Progress
+    description: Progress entry endpoints
+
+paths:
+  /auth/signup:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user
+      description: Creates a new cadet user account.
+      requestBody:
+        description: User signup information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupCredentials'
+            example:
+              name: Cadet User
+              email: cadet2@example.com
+              password: password123
+      responses:
+        '201':
+          description: User successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                id: 3
+                name: Cadet User
+                email: cadet2@example.com
+                role: cadet
+        '400':
+          $ref: '#/components/responses/InvalidUserInput'
+        '409':
+          $ref: '#/components/responses/DuplicateEmail'
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login user
+      description: Logs in a user and returns a JWT.
+      requestBody:
+        description: User login credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginCredentials'
+            example:
+              email: admin@example.com
+              password: password123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                message: Login successful
+                token: jwt_token_here
+        '400':
+          $ref: '#/components/responses/InvalidUserInput'
+        '401':
+          $ref: '#/components/responses/InvalidCredentials'
+
+  /workouts:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Workouts
+      summary: Get all workouts
+      description: Retrieves all workouts. User must be authenticated.
+      responses:
+        '200':
+          description: List of workouts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workout'
+              example:
+                - id: 1
+                  title: Interval Run
+                  description: Alternate sprinting and jogging
+                  category: Cardio
+                  difficulty: Intermediate
+                  duration_minutes: 30
+                  createdAt: '2026-04-28T02:41:26.612Z'
+                  updatedAt: '2026-04-28T02:41:26.612Z'
+                - id: 2
+                  title: Push-Up Circuit
+                  description: Timed push-up sets
+                  category: Strength
+                  difficulty: Beginner
+                  duration_minutes: 20
+                  createdAt: '2026-04-28T02:41:26.612Z'
+                  updatedAt: '2026-04-28T02:41:26.612Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Workouts
+      summary: Create a workout
+      description: Creates a new workout. Admin only.
+      requestBody:
+        description: Workout object to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkoutInput'
+            example:
+              title: Interval Run
+              description: Alternate between sprinting and jogging
+              category: Cardio
+              difficulty: Intermediate
+              duration_minutes: 30
+      responses:
+        '201':
+          description: Workout successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+              example:
+                id: 1
+                title: Interval Run
+                description: Alternate between sprinting and jogging
+                category: Cardio
+                difficulty: Intermediate
+                duration_minutes: 30
+                createdAt: '2026-04-28T02:41:26.612Z'
+                updatedAt: '2026-04-28T02:41:26.612Z'
+        '400':
+          $ref: '#/components/responses/InvalidWorkoutInput'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /workouts/{id}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Workouts
+      summary: Get workout by ID
+      description: Retrieves a single workout by ID.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: Single workout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+              example:
+                id: 1
+                title: Interval Run
+                description: Alternate sprinting and jogging
+                category: Cardio
+                difficulty: Intermediate
+                duration_minutes: 30
+                createdAt: '2026-04-28T02:41:26.612Z'
+                updatedAt: '2026-04-28T02:41:26.612Z'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/WorkoutNotFound'
+
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Workouts
+      summary: Update workout
+      description: Updates an existing workout. Admin only.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        description: Updated workout information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkoutInput'
+            example:
+              title: Updated Interval Run
+              description: Alternate sprinting, jogging, and walking
+              category: Cardio
+              difficulty: Intermediate
+              duration_minutes: 35
+      responses:
+        '200':
+          description: Workout successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+              example:
+                id: 1
+                title: Updated Interval Run
+                description: Alternate sprinting, jogging, and walking
+                category: Cardio
+                difficulty: Intermediate
+                duration_minutes: 35
+                createdAt: '2026-04-28T02:41:26.612Z'
+                updatedAt: '2026-04-28T02:50:10.612Z'
+        '400':
+          $ref: '#/components/responses/InvalidWorkoutInput'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/WorkoutNotFound'
+
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Workouts
+      summary: Delete workout
+      description: Deletes a workout. Admin only.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: Workout successfully deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workout'
+              example:
+                id: 1
+                title: Interval Run
+                description: Alternate sprinting and jogging
+                category: Cardio
+                difficulty: Intermediate
+                duration_minutes: 30
+                createdAt: '2026-04-28T02:41:26.612Z'
+                updatedAt: '2026-04-28T02:41:26.612Z'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/WorkoutNotFound'
+
+  /plans:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Plans
+      summary: Get all workout plans
+      description: Retrieves all workout plans owned by the authenticated user.
+      responses:
+        '200':
+          description: List of workout plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkoutPlan'
+              example:
+                - id: 1
+                  user_id: 2
+                  title: Cadet Beginner Plan
+                  goal: Improve baseline fitness
+                  duration_weeks: 4
+                  createdAt: '2026-04-28T02:41:26.637Z'
+                  updatedAt: '2026-04-28T02:41:26.637Z'
+                  planWorkouts:
+                    - plan_id: 1
+                      workout_id: 1
+                      day_number: 1
+                      workout:
+                        id: 1
+                        title: Interval Run
+                        description: Alternate sprinting and jogging
+                        category: Cardio
+                        difficulty: Intermediate
+                        duration_minutes: 30
+                    - plan_id: 1
+                      workout_id: 2
+                      day_number: 2
+                      workout:
+                        id: 2
+                        title: Push-Up Circuit
+                        description: Timed push-up sets
+                        category: Strength
+                        difficulty: Beginner
+                        duration_minutes: 20
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Plans
+      summary: Create workout plan
+      description: Creates a workout plan for the authenticated user.
+      requestBody:
+        description: Workout plan information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlanInput'
+            example:
+              title: PFA Prep Plan
+              goal: Improve run time and push-ups
+              duration_weeks: 4
+              workouts:
+                - workout_id: 1
+                  day_number: 1
+                - workout_id: 2
+                  day_number: 2
+      responses:
+        '201':
+          description: Workout plan successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutPlan'
+              example:
+                id: 3
+                user_id: 2
+                title: PFA Prep Plan
+                goal: Improve run time and push-ups
+                duration_weeks: 4
+                createdAt: '2026-04-28T02:41:26.637Z'
+                updatedAt: '2026-04-28T02:41:26.637Z'
+                planWorkouts:
+                  - plan_id: 3
+                    workout_id: 1
+                    day_number: 1
+                    workout:
+                      id: 1
+                      title: Interval Run
+                      description: Alternate sprinting and jogging
+                      category: Cardio
+                      difficulty: Intermediate
+                      duration_minutes: 30
+                  - plan_id: 3
+                    workout_id: 2
+                    day_number: 2
+                    workout:
+                      id: 2
+                      title: Push-Up Circuit
+                      description: Timed push-up sets
+                      category: Strength
+                      difficulty: Beginner
+                      duration_minutes: 20
+        '400':
+          $ref: '#/components/responses/InvalidPlanInput'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/WorkoutNotFound'
+
+  /plans/{id}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Plans
+      summary: Get workout plan by ID
+      description: Retrieves one workout plan. User must own the plan.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: Single workout plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutPlan'
+              example:
+                id: 1
+                user_id: 2
+                title: Cadet Beginner Plan
+                goal: Improve baseline fitness
+                duration_weeks: 4
+                createdAt: '2026-04-28T02:41:26.637Z'
+                updatedAt: '2026-04-28T02:41:26.637Z'
+                planWorkouts:
+                  - plan_id: 1
+                    workout_id: 1
+                    day_number: 1
+                    workout:
+                      id: 1
+                      title: Interval Run
+                      description: Alternate sprinting and jogging
+                      category: Cardio
+                      difficulty: Intermediate
+                      duration_minutes: 30
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/PlanNotFound'
+
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Plans
+      summary: Update workout plan
+      description: Updates a workout plan. User must own the plan.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        description: Updated workout plan information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlanInput'
+            example:
+              title: Updated PFA Prep Plan
+              goal: Increase endurance and upper body strength
+              duration_weeks: 6
+              workouts:
+                - workout_id: 1
+                  day_number: 1
+                - workout_id: 3
+                  day_number: 3
+      responses:
+        '200':
+          description: Workout plan successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutPlan'
+              example:
+                id: 1
+                user_id: 2
+                title: Updated PFA Prep Plan
+                goal: Increase endurance and upper body strength
+                duration_weeks: 6
+                createdAt: '2026-04-28T02:41:26.637Z'
+                updatedAt: '2026-04-28T02:55:26.637Z'
+                planWorkouts:
+                  - plan_id: 1
+                    workout_id: 1
+                    day_number: 1
+                    workout:
+                      id: 1
+                      title: Interval Run
+                      description: Alternate sprinting and jogging
+                      category: Cardio
+                      difficulty: Intermediate
+                      duration_minutes: 30
+                  - plan_id: 1
+                    workout_id: 3
+                    day_number: 3
+                    workout:
+                      id: 3
+                      title: Long Distance Run
+                      description: Steady pace endurance run
+                      category: Cardio
+                      difficulty: Advanced
+                      duration_minutes: 45
+        '400':
+          $ref: '#/components/responses/InvalidPlanInput'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/PlanNotFound'
+
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Plans
+      summary: Delete workout plan
+      description: Deletes a workout plan. User must own the plan.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: Workout plan successfully deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedWorkoutPlan'
+              example:
+                id: 1
+                user_id: 2
+                title: Cadet Beginner Plan
+                goal: Improve baseline fitness
+                duration_weeks: 4
+                createdAt: '2026-04-28T02:41:26.637Z'
+                updatedAt: '2026-04-28T02:41:26.637Z'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/PlanNotFound'
+
+  /progress:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Progress
+      summary: Get all progress entries
+      description: Retrieves all progress entries owned by the authenticated user.
+      responses:
+        '200':
+          description: List of progress entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgressEntry'
+              example:
+                - id: 1
+                  user_id: 2
+                  workout_id: 1
+                  date_completed: '2026-03-31T00:00:00.000Z'
+                  notes: Felt stronger than last week
+                  createdAt: '2026-04-28T02:41:26.637Z'
+                  updatedAt: '2026-04-28T02:41:26.637Z'
+                  workout:
+                    id: 1
+                    title: Interval Run
+                    description: Alternate sprinting and jogging
+                    category: Cardio
+                    difficulty: Intermediate
+                    duration_minutes: 30
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Progress
+      summary: Create progress entry
+      description: Creates a progress entry for the authenticated user.
+      requestBody:
+        description: Progress entry information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgressEntryInput'
+            example:
+              workout_id: 1
+              date_completed: '2026-04-28'
+              notes: Completed the workout and felt good
+      responses:
+        '201':
+          description: Progress entry successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressEntry'
+              example:
+                id: 3
+                user_id: 2
+                workout_id: 1
+                date_completed: '2026-04-28T00:00:00.000Z'
+                notes: Completed the workout and felt good
+                createdAt: '2026-04-28T02:41:26.637Z'
+                updatedAt: '2026-04-28T02:41:26.637Z'
+                workout:
+                  id: 1
+                  title: Interval Run
+                  description: Alternate sprinting and jogging
+                  category: Cardio
+                  difficulty: Intermediate
+                  duration_minutes: 30
+        '400':
+          $ref: '#/components/responses/InvalidProgressInput'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/WorkoutNotFound'
+
+  /progress/{id}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Progress
+      summary: Get progress entry by ID
+      description: Retrieves one progress entry. User must own the entry.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: Single progress entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressEntry'
+              example:
+                id: 1
+                user_id: 2
+                workout_id: 1
+                date_completed: '2026-03-31T00:00:00.000Z'
+                notes: Felt stronger than last week
+                createdAt: '2026-04-28T02:41:26.637Z'
+                updatedAt: '2026-04-28T02:41:26.637Z'
+                workout:
+                  id: 1
+                  title: Interval Run
+                  description: Alternate sprinting and jogging
+                  category: Cardio
+                  difficulty: Intermediate
+                  duration_minutes: 30
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ProgressNotFound'
+
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Progress
+      summary: Update progress entry
+      description: Updates a progress entry. User must own the entry.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        description: Updated progress entry information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgressEntryInput'
+            example:
+              workout_id: 2
+              date_completed: '2026-04-28'
+              notes: Improved run time and push-ups
+      responses:
+        '200':
+          description: Progress entry successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressEntry'
+              example:
+                id: 1
+                user_id: 2
+                workout_id: 2
+                date_completed: '2026-04-28T00:00:00.000Z'
+                notes: Improved run time and push-ups
+                createdAt: '2026-04-28T02:41:26.637Z'
+                updatedAt: '2026-04-28T02:55:26.637Z'
+                workout:
+                  id: 2
+                  title: Push-Up Circuit
+                  description: Timed push-up sets
+                  category: Strength
+                  difficulty: Beginner
+                  duration_minutes: 20
+        '400':
+          $ref: '#/components/responses/InvalidProgressInput'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ProgressNotFound'
+
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Progress
+      summary: Delete progress entry
+      description: Deletes a progress entry. User must own the entry.
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '200':
+          description: Progress entry successfully deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedProgressEntry'
+              example:
+                id: 1
+                user_id: 2
+                workout_id: 1
+                date_completed: '2026-03-31T00:00:00.000Z'
+                notes: Felt stronger than last week
+                createdAt: '2026-04-28T02:41:26.637Z'
+                updatedAt: '2026-04-28T02:41:26.637Z'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ProgressNotFound'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        name:
+          type: string
+          example: Cadet User
+        email:
+          type: string
+          example: cadet@example.com
+        role:
+          type: string
+          example: cadet
+
+    SignupCredentials:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Cadet User
+        email:
+          type: string
+          example: cadet@example.com
+        password:
+          type: string
+          example: password123
+
+    LoginCredentials:
+      type: object
+      properties:
+        email:
+          type: string
+          example: admin@example.com
+        password:
+          type: string
+          example: password123
+
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Login successful
+        token:
+          type: string
+          example: jwt_token_here
+
+    Workout:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        title:
+          type: string
+          example: Interval Run
+        description:
+          type: string
+          example: Alternate sprinting and jogging
+        category:
+          type: string
+          example: Cardio
+        difficulty:
+          type: string
+          example: Intermediate
+        duration_minutes:
+          type: integer
+          example: 30
+        createdAt:
+          type: string
+          readOnly: true
+          example: '2026-04-28T02:41:26.612Z'
+        updatedAt:
+          type: string
+          readOnly: true
+          example: '2026-04-28T02:41:26.612Z'
+
+    WorkoutInput:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Interval Run
+        description:
+          type: string
+          example: Alternate sprinting and jogging
+        category:
+          type: string
+          example: Cardio
+        difficulty:
+          type: string
+          example: Intermediate
+        duration_minutes:
+          type: integer
+          example: 30
+
+    WorkoutPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        user_id:
+          type: integer
+          readOnly: true
+          example: 2
+        title:
+          type: string
+          example: Cadet Beginner Plan
+        goal:
+          type: string
+          example: Improve baseline fitness
+        duration_weeks:
+          type: integer
+          example: 4
+        planWorkouts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanWorkout'
+
+    DeletedWorkoutPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 2
+        title:
+          type: string
+          example: Cadet Beginner Plan
+        goal:
+          type: string
+          example: Improve baseline fitness
+        duration_weeks:
+          type: integer
+          example: 4
+
+    WorkoutPlanInput:
+      type: object
+      properties:
+        title:
+          type: string
+          example: PFA Prep Plan
+        goal:
+          type: string
+          example: Improve run time and push-ups
+        duration_weeks:
+          type: integer
+          example: 4
+        workouts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanWorkoutInput'
+
+    PlanWorkout:
+      type: object
+      properties:
+        plan_id:
+          type: integer
+          example: 1
+        workout_id:
+          type: integer
+          example: 1
+        day_number:
+          type: integer
+          example: 1
+        workout:
+          $ref: '#/components/schemas/Workout'
+
+    PlanWorkoutInput:
+      type: object
+      properties:
+        workout_id:
+          type: integer
+          example: 1
+        day_number:
+          type: integer
+          example: 1
+
+    ProgressEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        user_id:
+          type: integer
+          readOnly: true
+          example: 2
+        workout_id:
+          type: integer
+          example: 1
+        date_completed:
+          type: string
+          example: '2026-03-31T00:00:00.000Z'
+        notes:
+          type: string
+          example: Felt stronger than last week
+        workout:
+          $ref: '#/components/schemas/Workout'
+
+    DeletedProgressEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 2
+        workout_id:
+          type: integer
+          example: 1
+        date_completed:
+          type: string
+          example: '2026-03-31T00:00:00.000Z'
+        notes:
+          type: string
+          example: Felt stronger than last week
+
+    ProgressEntryInput:
+      type: object
+      properties:
+        workout_id:
+          type: integer
+          example: 1
+        date_completed:
+          type: string
+          example: '2026-04-28'
+        notes:
+          type: string
+          example: Completed the workout and felt good
+
+  parameters:
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      description: Resource ID
+      schema:
+        type: integer
+        example: 1
+
+  responses:
+    InvalidUserInput:
+      description: Bad request due to invalid user input
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              errors:
+                - Email is required
+
+    DuplicateEmail:
+      description: Email already exists
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              error: Email already exists
+
+    InvalidCredentials:
+      description: Invalid credentials
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              error: Invalid credentials
+
+    Unauthorized:
+      description: Client is not authenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              error: Not authenticated. Please provide a valid token.
+
+    Forbidden:
+      description: Client is not authorized
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              error: "Forbidden: insufficient permission"
+
+    InvalidId:
+      description: Invalid ID
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              errors:
+                - Id must be a positive integer
+
+    InvalidWorkoutInput:
+      description: Bad request due to invalid workout input
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              errors:
+                - Title is required
+
+    InvalidPlanInput:
+      description: Bad request due to invalid workout plan input
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              errors:
+                - At least one workout is required
+
+    InvalidProgressInput:
+      description: Bad request due to invalid progress entry input
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              errors:
+                - Date completed must be a valid date
+
+    WorkoutNotFound:
+      description: Workout not found
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              error: Workout 9999 not found
+
+    PlanNotFound:
+      description: Workout plan not found
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              error: Plan 9999 not found
+
+    ProgressNotFound:
+      description: Progress entry not found
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              error: Progress entry 9999 not found
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
