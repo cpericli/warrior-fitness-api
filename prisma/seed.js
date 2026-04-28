@@ -3,7 +3,7 @@ import prisma from '../src/config/db.js';
 
 async function main() {
   // clear existing data 
-  await prisma.$queryRaw`TRUNCATE progressEntry, planWorkout, workoutPlan, workout, user RESTART IDENTITY CASCADE;
+    await prisma.$executeRaw` TRUNCATE TABLE "ProgressEntry", "PlanWorkout", "WorkoutPlan", "Workout", "User" RESTART IDENTITY CASCADE`;
 
   const hashedPassword = await bcrypt.hash('password123', 10);
 
