@@ -4,10 +4,83 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum Role {
+  admin
+  cadet
+}
+
+model User {
+  id            Int             @id @default(autoincrement())
+  name          String
+  email         String          @unique
+  password_hash String
+  role          Role            @default(cadet)
+
+  workoutPlans  WorkoutPlan[]
+  progressEntries ProgressEntry[]
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Workout {
+  id               Int             @id @default(autoincrement())
+  title            String
+  description      String
+  category         String
+  difficulty       String
+  duration_minutes Int
+
+  planWorkouts     PlanWorkout[]
+  progressEntries  ProgressEntry[]
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model WorkoutPlan {
+  id             Int           @id @default(autoincrement())
+  user_id        Int
+  title          String
+  goal           String
+  duration_weeks Int
+
+  user           User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  planWorkouts   PlanWorkout[]
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model PlanWorkout {
+  plan_id    Int
+  workout_id Int
+  day_number Int
+
+  plan       WorkoutPlan @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+  workout    Workout     @relation(fields: [workout_id], references: [id], onDelete: Cascade)
+
+  @@id([plan_id, workout_id])
+}
+
+model ProgressEntry {
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  workout_id     Int
+  date_completed DateTime
+  notes          String?
+
+  user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workout        Workout  @relation(fields: [workout_id], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
