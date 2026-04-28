@@ -4,6 +4,7 @@ import morgan from 'morgan';
 
 import authRoutes from './routes/authRoutes.js';
 import workoutRoutes from './routes/workoutRoutes.js';
+import planRoutes from './routes/planRoutes.js';
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(morgan('dev'));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/workouts', workoutRoutes);
+app.use('/api/plans', planRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Warrior Fitness API is running' });
