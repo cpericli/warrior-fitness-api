@@ -25,6 +25,13 @@ app.use('/api/workouts', workoutRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/progress', progressRoutes);
 
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    uptime: process.uptime(),
+  });
+});
+
 app.get('/', (req, res) => {
   res.json({ message: 'Warrior Fitness API is running' });
 });
