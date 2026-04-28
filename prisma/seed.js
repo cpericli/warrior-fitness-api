@@ -32,7 +32,7 @@ async function main() {
   });
 
   // create sample workouts
-  await prisma.workout.createMany({
+  const workouts = await prisma.workout.createMany({
     data: [
       {
         title: 'Interval Run',
@@ -48,8 +48,63 @@ async function main() {
         difficulty: 'Beginner',
         duration_minutes: 20,
       },
+      {
+        title: 'Long Distance Run',
+        description: 'Steady pace endurance run',
+        category: 'Cardio',
+        difficulty: 'Advanced',
+        duration_minutes: 45,
+      },
     ],
   });
+
+  // fetch workouts so we can use IDs
+  const allWorkouts = await prisma.workout.findMany();
+
+  // create cadet plan
+  await prisma.workoutPlan.create({
+    data: {
+      title: 'Cadet Beginner Plan',
+      goal: 'Improve baseline fitness',
+      duration_weeks: 4,
+      user_id: cadet.id,
+      planWorkouts: {
+        create: [
+          {
+            workout_id: allWorkouts[0].id,
+            day_number: 1,
+          },
+          {
+            workout_id: allWorkouts[1].id,
+            day_number: 2,
+          },
+        ],
+      },
+    },
+  });
+
+  // create admin plan (for ownership testing)
+  await prisma.workoutPlan.create({
+    data: {
+      title: 'Admin Plan',
+      goal: 'Maintain high fitness',
+      duration_weeks: 6,
+      user_id: admin.id,
+      planWorkouts: {
+        create: [
+          {
+            workout_id: allWorkouts[1].id,
+            day_number: 1,
+          },
+          {
+            workout_id: allWorkouts[2].id,
+            day_number: 2,
+          },
+        ],
+      },
+    },
+  });
+
 
   console.log('Database seeded');
 }
